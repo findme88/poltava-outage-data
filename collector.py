@@ -1,4 +1,4 @@
-"""Publish validated official schedules using the OE_OUTAGE_DATA JSON shape."""
+"""Collect, validate, and publish official Poltava outage schedules as JSON."""
 
 import argparse
 import asyncio

@@ -106,11 +106,11 @@ class ExportTests(unittest.TestCase):
 
     def test_only_public_allowlisted_fields_are_serialized(self):
         entry = self.entry()
-        entry.update(subscribers={"secret-id": "name"}, token="DO_NOT_PUBLISH")
+        entry.update(private_note={"sample-id": "name"}, api_key="DO_NOT_PUBLISH")
         payload = build_payload({self.day: entry}, self.now)
         text = json.dumps(payload)
         self.assertNotIn("DO_NOT_PUBLISH", text)
-        self.assertNotIn("subscribers", text)
+        self.assertNotIn("private_note", text)
         with TemporaryDirectory() as root:
             path = Path(root) / "data" / "Poltavaoblenergo.json"
             save_payload(path, payload)

@@ -35,6 +35,8 @@ https://raw.githubusercontent.com/findme88/poltava-outage-data/main/data/Poltava
   Пріоритет мають офіційні повідомлення оператора.
 
 Статус запусків: [Actions](https://github.com/findme88/poltava-outage-data/actions).
+Власник репозиторію може також запустити workflow вручну. Опція `force_publish`
+примусово записує файл, але лише після успішної перевірки офіційного джерела.
 
 ## Сумісність зі старим джерелом
 

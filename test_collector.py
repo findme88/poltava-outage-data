@@ -5,11 +5,11 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from collector import (KYIV, SLOT_PAIRS, build_payload, collect_days, decode_queues,
                        encode_queues, load_cached_days, midnight_stamp, save_payload,
-                       should_publish, timestamp)
+                       should_publish, timestamp, run)
 from poe_client import QUEUE_NAMES
 
 
@@ -158,6 +158,28 @@ class CollectionTests(unittest.IsolatedAsyncioTestCase):
         self.client.fetch_available_schedule_bundle.return_value = ({}, {}, {self.today, self.tomorrow})
         days = await collect_days(self.client, self.now)
         self.assertTrue(all(day["status"] == "no_outages" for day in days.values()))
+
+    async def test_force_publication_still_requires_a_successful_collection(self):
+        with TemporaryDirectory() as root:
+            path = Path(root) / "Poltavaoblenergo.json"
+            path.write_text('{"regionId": "Poltava"}', encoding="utf-8")
+            original = path.read_bytes()
+            with patch("collector.collect_days", new_callable=AsyncMock, side_effect=RuntimeError("offline")):
+                with self.assertRaises(RuntimeError):
+                    await run(path, force=True)
+            self.assertEqual(path.read_bytes(), original)
+
+    async def test_force_publication_bypasses_only_heartbeat_not_validation(self):
+        days = {self.today: {"visuals": self.visuals, "status": "scheduled",
+                            "verifiedAt": timestamp(self.now), "fresh": True}}
+        with TemporaryDirectory() as root:
+            path = Path(root) / "Poltavaoblenergo.json"
+            with patch("collector.collect_days", new_callable=AsyncMock, return_value=days), \
+                    patch("collector.should_publish", return_value=False):
+                await run(path)
+                self.assertFalse(path.exists())
+                await run(path, force=True)
+                self.assertEqual(json.loads(path.read_text(encoding="utf-8"))["regionId"], "Poltava")
 
 
 if __name__ == "__main__":

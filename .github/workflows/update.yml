@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "2-57/5 * * * *"
   workflow_dispatch:
+    inputs:
+      force_publish:
+        description: Republish after successful official verification
+        type: boolean
+        required: false
+        default: false
   push:
     paths:
       - "collector.py"
@@ -36,7 +42,14 @@ jobs:
       - name: Test parser and JSON compatibility
         run: python -m unittest discover -v
       - name: Collect and validate official schedules
-        run: python collector.py
+        env:
+          FORCE_PUBLICATION: ${{ github.event_name == 'workflow_dispatch' && inputs.force_publish && '1' || '0' }}
+        run: |
+          if [ "$FORCE_PUBLICATION" = "1" ]; then
+            python collector.py --force
+          else
+            python collector.py
+          fi
       - name: Publish JSON changes or hourly verification heartbeat
         run: |
           if [ -z "$(git status --porcelain -- data/Poltavaoblenergo.json)" ]; then

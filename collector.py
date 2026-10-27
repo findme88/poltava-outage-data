@@ -198,7 +198,7 @@ def save_payload(path, payload):
     temporary.replace(path)
 
 
-async def run(output):
+async def run(output, force=False):
     previous = json.loads(output.read_text(encoding="utf-8")) if output.exists() else None
     now = datetime.now(KYIV)
     days = await asyncio.wait_for(collect_days(PoescheduleClient(), now, previous), timeout=180)
@@ -206,7 +206,7 @@ async def run(output):
     if datetime.now(KYIV).date() != now.date():
         raise RuntimeError("Kyiv date changed during collection; retry on the next run")
     payload = build_payload(days, now)
-    if should_publish(previous, payload, now):
+    if force or should_publish(previous, payload, now):
         save_payload(output, payload)
         print("Published verified snapshot: " + ", ".join(
             f"{day}={entry['status']}" for day, entry in payload["metadata"]["days"].items()))
@@ -217,10 +217,11 @@ async def run(output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument("--force", action="store_true", help="Republish after a successful official verification")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
-    asyncio.run(run(args.output))
+    asyncio.run(run(args.output, force=args.force))
 
 
 if __name__ == "__main__":

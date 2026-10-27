@@ -39,12 +39,11 @@ https://raw.githubusercontent.com/findme88/poltava-outage-data/main/data/Poltava
 Власник репозиторію може також запустити workflow вручну. Опція `force_publish`
 примусово записує файл, але лише після успішної перевірки офіційного джерела.
 
-## Сумісність зі старим джерелом
+## Формат JSON
 
-Збережена структура [OE_OUTAGE_DATA](https://github.com/yaroslav2901/OE_OUTAGE_DATA):
+Основні поля:
 `regionId`, `lastUpdated`, `fact.data`, `fact.update`, `fact.today`,
 `preset.time_zone` та `preset.time_type`.
-Код цього збирача власний; дані беруться з офіційного сайту, не зі старого дзеркала.
 Додаткове поле `metadata` описує достовірність та статус кожного дня.
 
 - `regionId`: `Poltava`.

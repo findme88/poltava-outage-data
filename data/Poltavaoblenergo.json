@@ -1,6 +1,6 @@
 {
   "regionId": "Poltava",
-  "lastUpdated": "2026-10-30T17:09:08.343Z",
+  "lastUpdated": "2026-10-30T21:28:58.061Z",
   "fact": {
     "data": {
       "1793311200": {
@@ -632,7 +632,7 @@
         }
       }
     },
-    "update": "30.10.2026 19:09",
+    "update": "30.10.2026 23:28",
     "today": 1793311200
   },
   "preset": {
@@ -776,12 +776,12 @@
     "days": {
       "2026-10-30": {
         "status": "scheduled",
-        "verifiedAt": "2026-10-30T17:09:08.343Z",
+        "verifiedAt": "2026-10-30T21:28:58.061Z",
         "fresh": true
       },
       "2026-10-31": {
         "status": "scheduled",
-        "verifiedAt": "2026-10-30T17:09:08.343Z",
+        "verifiedAt": "2026-10-30T21:28:58.061Z",
         "fresh": true
       }
     }

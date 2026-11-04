@@ -22,6 +22,9 @@ SLOT_PAIRS = {
     "second": ("light_1", "light_2"),
     "mfirst": ("light_3", "light_1"),
     "msecond": ("light_2", "light_3"),
+    "mfirst_no": ("light_3", "light_2"),
+    "yes_msecond": ("light_1", "light_3"),
+    "maybe": ("light_3", "light_3"),
 }
 PAIR_CODES = {pair: code for code, pair in SLOT_PAIRS.items()}
 TIME_TYPES = {
@@ -31,6 +34,9 @@ TIME_TYPES = {
     "second": "\u0411\u0435\u0437 \u0441\u0432\u0456\u0442\u043b\u0430 \u0434\u0440\u0443\u0433\u0456 30 \u0445\u0432.",
     "mfirst": "\u041f\u0435\u0440\u0448\u0456 30 \u0445\u0432. \u043f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u043d\u043d\u044f, \u0434\u0440\u0443\u0433\u0456 30 \u0445\u0432. \u0441\u0432\u0456\u0442\u043b\u043e \u0454",
     "msecond": "\u041f\u0435\u0440\u0448\u0456 30 \u0445\u0432. \u0431\u0435\u0437 \u0441\u0432\u0456\u0442\u043b\u0430, \u0434\u0440\u0443\u0433\u0456 30 \u0445\u0432. \u043f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u043d\u043d\u044f",
+    "mfirst_no": "\u041f\u0435\u0440\u0448\u0456 30 \u0445\u0432. \u043f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u043d\u043d\u044f, \u0434\u0440\u0443\u0433\u0456 30 \u0445\u0432. \u0431\u0435\u0437 \u0441\u0432\u0456\u0442\u043b\u0430",
+    "yes_msecond": "\u041f\u0435\u0440\u0448\u0456 30 \u0445\u0432. \u0441\u0432\u0456\u0442\u043b\u043e \u0454, \u0434\u0440\u0443\u0433\u0456 30 \u0445\u0432. \u043f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u043d\u043d\u044f",
+    "maybe": "\u041f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u043d\u043d\u044f \u043f\u0440\u043e\u0442\u044f\u0433\u043e\u043c \u0433\u043e\u0434\u0438\u043d\u0438",
 }
 
 
@@ -63,7 +69,7 @@ def encode_queues(visuals):
         for index in range(0, 48, 2):
             pair = tuple(slots[index:index + 2])
             if pair not in PAIR_CODES:
-                raise ValueError("Official state pair cannot be represented losslessly in the legacy format")
+                raise ValueError("Unknown official slot state")
             hours[str(index // 2 + 1)] = PAIR_CODES[pair]
         groups["GPV" + queue] = hours
     return groups
@@ -170,13 +176,14 @@ def build_payload(days, now):
                           for hour in range(24)},
             "time_type": TIME_TYPES,
         },
-        "metadata": {"schemaVersion": 1, "timezone": "Europe/Kyiv", "slotMinutes": 30,
+        "metadata": {"schemaVersion": 2, "timezone": "Europe/Kyiv", "slotMinutes": 30,
                      "source": PoescheduleClient.NEW_URL, "unofficial": True, "days": metadata},
     }
 
 
 def content_key(payload):
     return {"data": payload["fact"]["data"], "today": payload["fact"]["today"],
+            "schemaVersion": payload["metadata"]["schemaVersion"],
             "days": {day: {key: entry[key] for key in ("status", "fresh")}
                      for day, entry in payload["metadata"]["days"].items()}}
 

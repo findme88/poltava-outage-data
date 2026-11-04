@@ -24,12 +24,13 @@ class ExportTests(unittest.TestCase):
         return {"visuals": deepcopy(visuals or self.visuals), "status": status,
                 "verifiedAt": timestamp(self.now), "fresh": fresh}
 
-    def test_all_six_legacy_codes_round_trip_without_losing_yellow(self):
-        self.visuals["5.1"][:12] = [slot for pair in SLOT_PAIRS.values() for slot in pair]
+    def test_all_nine_pairs_round_trip_without_losing_yellow(self):
+        self.visuals["5.1"][:18] = [slot for pair in SLOT_PAIRS.values() for slot in pair]
         groups = encode_queues(self.visuals)
-        self.assertEqual(list(groups["GPV5.1"].values())[:6], list(SLOT_PAIRS))
+        self.assertEqual(list(groups["GPV5.1"].values())[:9], list(SLOT_PAIRS))
         self.assertEqual(decode_queues(groups), self.visuals)
         self.assertEqual(groups["GPV5.1"]["6"], "msecond")
+        self.assertEqual(groups["GPV5.1"]["7"], "mfirst_no")
 
     def test_exact_legacy_shape_and_today_do_not_depend_on_available_dates(self):
         payload = build_payload({self.tomorrow: self.entry()}, self.now)
@@ -43,13 +44,12 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(set(payload["preset"]["time_type"]), set(SLOT_PAIRS))
         self.assertEqual(payload["metadata"]["days"][self.day]["status"], "unknown")
 
-    def test_missing_invalid_or_unrepresentable_cells_are_not_replaced_with_green(self):
+    def test_missing_or_invalid_cells_are_not_replaced_with_green(self):
         cases = []
         missing_queue = deepcopy(self.visuals)
         missing_queue.pop("6.2")
         cases.append(missing_queue)
-        for change in (lambda slots: slots.pop(), lambda slots: slots.__setitem__(0, "unknown"),
-                       lambda slots: slots.__setitem__(1, "light_3")):
+        for change in (lambda slots: slots.pop(), lambda slots: slots.__setitem__(0, "unknown")):
             visuals = deepcopy(self.visuals)
             change(visuals["5.1"])
             cases.append(visuals)
